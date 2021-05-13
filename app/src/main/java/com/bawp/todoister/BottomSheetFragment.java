@@ -1,5 +1,6 @@
 package com.bawp.todoister;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -11,7 +12,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
+import com.bawp.todoister.ir.hamsa.PersianActivity;
 import com.bawp.todoister.model.Priority;
 import com.bawp.todoister.model.SharedViewModel;
 import com.bawp.todoister.model.Task;
@@ -23,12 +26,16 @@ import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.Group;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.fragment.NavHostFragment;
 
 import java.util.Calendar;
 import java.util.Date;
+
+
+import ir.hamsaa.persiandatepicker.PersianDatePickerDialog;
+import ir.hamsaa.persiandatepicker.api.PersianPickerDate;
+import ir.hamsaa.persiandatepicker.api.PersianPickerListener;
+import ir.hamsaa.persiandatepicker.util.PersianCalendarUtils;
 
 import static com.bawp.todoister.R.string.empty_field;
 
@@ -36,7 +43,6 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
 
     private EditText enterTodo;
     private ImageButton calenderButton;
-    private ImageButton priorityButton;
     private RadioGroup priorityRadioGroup;
     private RadioGroup selectedRadioButton;
     private int selectedButtonId;
@@ -51,6 +57,9 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
     private RadioButton high;
     private RadioButton med;
     private RadioButton low;
+    private PersianDatePickerDialog picker;
+    MainActivity mainActivity = new MainActivity();
+
     public BottomSheetFragment() {
 
     }
@@ -67,7 +76,6 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
         calenderButton = view.findViewById(R.id.today_calendar_button);
         enterTodo = view.findViewById(R.id.enter_todo_et);
         saveButton = view.findViewById(R.id.save_todo_button);
-        priorityButton = view.findViewById(R.id.priority_todo_button);
         priorityRadioGroup = view.findViewById((R.id.radioGroup_priority));
         high = (RadioButton) view.findViewById(R.id.radioButton_high); // initiate a radio button
         med = (RadioButton) view.findViewById(R.id.radioButton_med); // initiate a radio button
@@ -83,6 +91,38 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
 
 
         return view;
+    }
+
+
+    public void save(Date dueDate){
+        String task = enterTodo.getText().toString().trim();
+        if(dueDate == null){
+
+            Log.i("date", String.valueOf(dueDate));
+        }
+            if (!TextUtils.isEmpty(task) && dueDate != null && priority != null ){
+
+                Task myTask = new Task(task, priority, dueDate, Calendar.getInstance().getTime(), false);
+                if(isEdit){
+                    Task updateTask = sharedViewModel.getSelectedItem().getValue();
+                    updateTask.setTask(task);
+                    updateTask.setDateCreated(Calendar.getInstance().getTime());
+                    updateTask.setPriority(priority);
+                    updateTask.setDueDate(dueDate);
+                    TaskViewModel.update(updateTask);
+                    sharedViewModel.setIsEdit(false);
+
+
+                }else {
+                    TaskViewModel.insert(myTask);
+                }
+                enterTodo.setText("");
+                if(this.isVisible()){
+                    this.dismiss();
+                }
+            }else{
+                Snackbar.make(saveButton, empty_field, Snackbar.LENGTH_LONG).show();
+            }
     }
 
     @Override
@@ -112,6 +152,7 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
             calender.clear();
             calender.set(year, month, dayOfMonth);
             dueDate = calender.getTime();
+
         });
        // priorityButton.setOnClickListener(view13 -> {
           //  Log.i("Press", "Ok");
@@ -145,31 +186,8 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
 
         saveButton.setOnClickListener(view1 -> {
 
-            String task = enterTodo.getText().toString().trim();
+            save(dueDate);
 
-            if (!TextUtils.isEmpty(task) && dueDate != null /*&& priority != null*/ ){
-
-                Task myTask = new Task(task, priority, dueDate, Calendar.getInstance().getTime(), false);
-                if(isEdit){
-                    Task updateTask = sharedViewModel.getSelectedItem().getValue();
-                    updateTask.setTask(task);
-                    updateTask.setDateCreated(Calendar.getInstance().getTime());
-                    updateTask.setPriority(priority);
-                    updateTask.setDueDate(dueDate);
-                    TaskViewModel.update(updateTask);
-                    sharedViewModel.setIsEdit(false);
-
-
-                }else {
-                    TaskViewModel.insert(myTask);
-                }
-                enterTodo.setText("");
-                if(this.isVisible()){
-                    this.dismiss();
-                }
-            }else{
-                Snackbar.make(saveButton, empty_field, Snackbar.LENGTH_LONG).show();
-            }
         });
 
     }
@@ -193,4 +211,6 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
         }
 
     }
+
+
 }

@@ -1,2 +1,3 @@
+include ':persiandatepicker'
 include ':app'
 rootProject.name = "Todoister"

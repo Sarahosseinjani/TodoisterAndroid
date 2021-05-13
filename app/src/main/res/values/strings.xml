@@ -27,4 +27,5 @@
     <string name="image_description">button image</string>
     <string name="about_text">Todoist Clone App - by BAWP - version 0.1</string>
     <string name="add_todos">Add a Todo...</string>
+    <string name="persian_date_picker">Persian Date Picker</string>
 </resources>
